@@ -1,7 +1,16 @@
 package br.com.bestjob.model.entity;
 
+import java.util.Calendar;
+
+/**
+ * @author Tiago Ferezin
+ *
+ */
+
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -9,7 +18,7 @@ import javax.persistence.Id;
 import br.com.bestjob.model.enumerado.EEstado;
 
 @Entity
-public class Municipio {
+public class Municipio extends AEntity<Municipio> {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,10 +29,13 @@ public class Municipio {
 	private String nome;
 
 	@Column(nullable = false)
+	@Enumerated(EnumType.STRING)
 	private EEstado estado;
-	
+
+	private Calendar dataDesativacao;
+
 	public Municipio() {
-		
+
 	}
 
 	/**
@@ -34,7 +46,8 @@ public class Municipio {
 	}
 
 	/**
-	 * @param idMunicipio the idMunicipio to set
+	 * @param idMunicipio
+	 *            the idMunicipio to set
 	 */
 	public void setIdMunicipio(Long idMunicipio) {
 		this.idMunicipio = idMunicipio;
@@ -48,7 +61,8 @@ public class Municipio {
 	}
 
 	/**
-	 * @param nome the nome to set
+	 * @param nome
+	 *            the nome to set
 	 */
 	public void setNome(String nome) {
 		this.nome = nome;
@@ -62,12 +76,42 @@ public class Municipio {
 	}
 
 	/**
-	 * @param estado the estado to set
+	 * @param estado
+	 *            the estado to set
 	 */
 	public void setEstado(EEstado estado) {
 		this.estado = estado;
 	}
-	
-	
+
+	@Override
+	public Long getId() {
+		// TODO Auto-generated method stub
+		return idMunicipio;
+	}
+
+	@Override
+	public void setId(Long id) {
+		// TODO Auto-generated method stub
+		this.idMunicipio = id;
+	}
+
+	@Override
+	public boolean isDeleted() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public Calendar getDataDesativacao() {
+
+		// TODO Auto-generated method stub
+		return dataDesativacao;
+	}
+
+	@Override
+	public void setDataDesativacao(Calendar dataDesativacao) {
+		// TODO Auto-generated method stub
+		this.dataDesativacao = dataDesativacao;
+	}
 
 }
