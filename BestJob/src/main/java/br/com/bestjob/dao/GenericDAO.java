@@ -17,6 +17,7 @@ import org.apache.log4j.Logger;
 
 import br.com.bestjob.dao.factory.GenericDAOFactory;
 import br.com.bestjob.model.entity.AEntity;
+import br.com.bestjob.utils.NameValuePair;
 
 /**
  * @author Tiago Ferezin
@@ -321,6 +322,122 @@ public class GenericDAO {
 		}
 
 		return result;
+
+	}
+	
+	public List<AEntity> read(AEntity entity, EntityManager entityManager, String where,
+			List<NameValuePair> whereParameters, Integer initialRecord, Integer amountRecord,
+			List<NameValuePair> orderBy, Boolean registrosAtivos) throws Exception {
+
+		initializeEntityManager();
+
+		List<AEntity> list = new ArrayList<AEntity>();
+
+		if (registrosAtivos == null) {
+			registrosAtivos = true;
+		}
+
+		boolean closeTransaction = false;
+		try {
+			if (!entityManager.getTransaction().isActive()) {
+				logger.debug("\n*** Starting transaction \n");
+				entityManager.getTransaction().begin();
+				closeTransaction = true;
+			}
+
+			String hQl = "from " + entity.getClass().getSimpleName() + " t ";
+			// String hQl = "from T t ";
+			System.out.println(hQl);
+			if ((where != null) && (!where.trim().isEmpty())) {
+				hQl += " where " + where;
+				if (registrosAtivos) {
+					hQl += " and (dataDesativacao is null)";
+				}
+				System.out.println(hQl);
+			} else {
+				if (registrosAtivos) {
+					hQl += " where (dataDesativacao is null)";
+				}
+			}
+			System.out.println(hQl);
+
+			String order = "";
+
+			if ((orderBy != null) && (orderBy.size() > 0)) {
+
+				order = "";
+
+				for (NameValuePair orderColumn : orderBy) {
+
+					if ((order != null) && (!order.isEmpty())) {
+						order += ", ";
+					}
+
+					order += orderColumn.getName();
+
+					if (orderColumn.getValue() != null) {
+						order += " " + orderColumn.getValue();
+					}
+
+				}
+
+				order = " order by " + order;
+
+			}
+
+			hQl += order;
+			System.out.println(hQl);
+			logger.debug("HQL: ");
+			logger.debug(hQl);
+
+			Query query = entityManager.createQuery(hQl);
+
+			if ((where != null) && (!where.trim().isEmpty())) {
+				if (whereParameters != null) {
+					for (NameValuePair par : whereParameters) {
+						logger.debug("Set attribute: " + par.getName());
+
+						query.setParameter(par.getName(), par.getValue());
+					}
+				}
+			}
+
+			if (initialRecord > 0) {
+				query.setFirstResult(initialRecord);
+			}
+
+			if (amountRecord > 0) {
+				query.setMaxResults(amountRecord);
+			}
+
+			logger.debug("Query: " + query.toString());
+
+			list = query.getResultList();
+
+			if (entityManager.getTransaction().isActive()) {
+				if (closeTransaction) {
+					logger.debug("\n*** Commiting transaction \n");
+					entityManager.getTransaction().commit();
+				}
+			}
+
+		} catch (Exception e) {
+			if (entityManager.getTransaction().isActive()) {
+				if (closeTransaction) {
+					logger.debug("\n*** Rollback transaction\n");
+					entityManager.getTransaction().rollback();
+				}
+			}
+
+			throw e;
+
+		} finally {
+//			if (closeTransaction) {
+//				logger.debug("\n*** Closing EM\n");
+//				entityManager.close();
+//			}
+		}
+		return list;
 
 	}
 
